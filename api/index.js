@@ -7,9 +7,21 @@ import hotelsRoute from "./routes/hotels.js"
 import roomsRoute from "./routes/rooms.js"
 import cookieParser from "cookie-parser"
 import cors from "cors"
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+
 
 const app=express()
 dotenv.config()
+
+
+// 获取当前文件的目录名
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 现在您可以使用 __dirname 来构建路径
+app.use(express.static(path.join(__dirname, '../client/build')));
 
 const connect=async ()=>{
 try {
@@ -51,7 +63,17 @@ app.use((err, req,res,next)=>{
   })
 })
 
-app.listen(8800, ()=>{
-    connect()
-    console.log("Connected to backend.")
-})
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../client/build')));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+});
+
+const PORT = process.env.PORT || 8800;
+app.listen(PORT, () => {
+  connect();
+  console.log(`Server is running on port ${PORT}.`);
+});
